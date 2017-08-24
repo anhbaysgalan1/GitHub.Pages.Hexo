@@ -5,7 +5,6 @@ tags:
     - WPF
     - XAML
 categories: WPF
-comments: true
 mathjax: true
 description: 本文介绍了使用WPF制作带居中三角形指示的Tooltip样式的Tooltip。
 ---
