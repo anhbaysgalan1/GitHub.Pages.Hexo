@@ -1,7 +1,10 @@
 ---
 title: Edge浏览器下启用全功能Gitment
 date: 2017-08-24 11:53:38
-tags: 博客相关
+categories: 博客相关
+tags:
+    - Edge
+    - Gitment
 ---
 [Gitment](https://github.com/imsun/gitment)评论系统是一款基于 GitHub Issues 的评论系统，适合作为软件开发技术类博客作为评论系统使用，同时支持Hexo等博客框架。
 
@@ -19,3 +22,5 @@ tags: 博客相关
 
 效果图：
 {% asset_img demo.jpg %}
+
+> 经过测试，直接替换 node_modules/gitment 中的文件是没有效果的。目前只能在生成之后手动替换 gitment.browser 文件，或者等待作者更新。

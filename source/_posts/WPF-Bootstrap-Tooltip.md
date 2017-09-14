@@ -31,9 +31,16 @@ description: 本文介绍了使用WPF制作带居中三角形指示的Tooltip样
 因此采用如下设计：
 ``` xml
 <Grid x:Name="g">
-    <Border CornerRadius="3" BorderThickness="1" BorderBrush="{StaticResource TooltipBorderBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="White" Margin="0,5,0,0" Padding="8">
+    <Border CornerRadius="3" BorderThickness="1" 
+            BorderBrush="{StaticResource TooltipBorderBrush}" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch" 
+            Background="White" 
+            Margin="0,5,0,0" Padding="8">
     </Border>
-    <Canvas HorizontalAlignment="Center" VerticalAlignment="Top" Height="6" Width="12">
+    <Canvas HorizontalAlignment="Center" 
+            VerticalAlignment="Top" 
+            Height="6" Width="12">
     </Canvas>
 </Grid>
 ```
@@ -44,7 +51,9 @@ description: 本文介绍了使用WPF制作带居中三角形指示的Tooltip样
 ```
 三角形的边框不能直接使用属性进行设置了，否则三角形的底也会被绘制上边框，无法达到效果。我们可以绘制一段多段线（`Polyline`）来实现边框的绘制。同样还是设置上面三个点，但是对象类型改为`Polyline`。
 ``` xml
-<Polyline Points="0,6 6,0 12,6" Stroke="{StaticResource TooltipBorderBrush}" StrokeThickness="1"/>
+<Polyline Points="0,6 6,0 12,6" 
+          Stroke="{StaticResource TooltipBorderBrush}" 
+          StrokeThickness="1"/>
 ```
 此时三角形绘制完成。
 
@@ -59,14 +68,18 @@ description: 本文介绍了使用WPF制作带居中三角形指示的Tooltip样
 # 整体代码
 ``` xml
 <Grid x:Name="g">
-<Border CornerRadius="3" BorderThickness="1" BorderBrush="{StaticResource TooltipBorderBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="White" Margin="0,5,0,0" Padding="8">
-    <!--<TextBlock Text="手工标注" VerticalAlignment="Center" HorizontalAlignment="Center" />-->
-    <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
-</Border>
-<Canvas HorizontalAlignment="Center" VerticalAlignment="Top" Height="6" Width="12">
-    <Polygon Points="0,6 6,0 12,6" StrokeThickness="0" Fill="White"/>
-    <Polyline Points="0,6 6,0 12,6" Stroke="{StaticResource TooltipBorderBrush}" StrokeThickness="1"/>
-</Canvas>
+    <Border CornerRadius="3" 
+            BorderThickness="1" BorderBrush="{StaticResource TooltipBorderBrush}" 
+            HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+            Background="White" Margin="0,5,0,0" Padding="8">
+        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+    </Border>
+    <Canvas HorizontalAlignment="Center" VerticalAlignment="Top" Height="6" Width="12">
+        <Polygon Points="0,6 6,0 12,6" StrokeThickness="0" Fill="White"/>
+        <Polyline Points="0,6 6,0 12,6" 
+                  Stroke="{StaticResource TooltipBorderBrush}" 
+                  StrokeThickness="1"/>
+    </Canvas>
 </Grid>
 ```
 可以将此段代码放置在自定义Tooltip样式的`Template`属性值下，实现通过样式进行设置。即
@@ -81,12 +94,23 @@ description: 本文介绍了使用WPF制作带居中三角形指示的Tooltip样
         <Setter.Value>
             <ControlTemplate TargetType="ToolTip">
                 <Grid x:Name="g">
-                    <Border CornerRadius="3" BorderThickness="1" BorderBrush="{StaticResource TooltipBorderBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="White" Margin="0,5,0,0" Padding="8">
-                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <Border CornerRadius="3" 
+                            BorderThickness="1" 
+                            BorderBrush="{StaticResource TooltipBorderBrush}" 
+                            HorizontalAlignment="Stretch" 
+                            VerticalAlignment="Stretch" 
+                            Background="White" 
+                            Margin="0,5,0,0" Padding="8">
+                        <ContentPresenter VerticalAlignment="Center" 
+                                          HorizontalAlignment="Center"/>
                     </Border>
-                    <Canvas HorizontalAlignment="Center" VerticalAlignment="Top" Height="6" Width="12">
+                    <Canvas HorizontalAlignment="Center" 
+                            VerticalAlignment="Top" 
+                            Height="6" Width="12">
                         <Polygon Points="0,6 6,0 12,6" StrokeThickness="0" Fill="White"/>
-                        <Polyline Points="0,6 6,0 12,6" Stroke="{StaticResource TooltipBorderBrush}" StrokeThickness="1"/>
+                        <Polyline Points="0,6 6,0 12,6" 
+                                  Stroke="{StaticResource TooltipBorderBrush}" 
+                                  StrokeThickness="1"/>
                     </Canvas>
                 </Grid>
             </ControlTemplate>
