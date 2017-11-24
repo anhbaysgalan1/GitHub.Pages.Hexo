@@ -14,6 +14,8 @@ tags:
 > - Edge 只显示评论，无法进行评论
 > - IE 11完全不显示
 
+<!-- more -->
+
 因此需要寻找提高Gitment兼容性的办法。作者[GeekaholicLin](https://github.com/GeekaholicLin) 在其发起的[Pull request #52](https://github.com/imsun/gitment/pull/52) 中提供了两个修改过的`gitment.browser.js`文件，地址为：
 - http://blog.geekaholic.cn/js/thirdParty/gitment.browser.js
 - http://blog.geekaholic.cn/js/thirdParty/gitment.browser.min.js

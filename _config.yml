@@ -4,7 +4,7 @@
 
 # Site
 title: HPDell的个人博客
-subtitle: 我们在小孩和大人的转角 盖一座城堡
+subtitle: 我们在小孩和大人的转角盖一座城堡
 description:
 author: HPDell
 language: zh-CN
@@ -83,3 +83,22 @@ deploy:
 
 # Mathjax
 mathjax: true
+
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: false
+    tags: true
