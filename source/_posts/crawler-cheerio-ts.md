@@ -62,8 +62,7 @@ WebRequest.defaults({jar: true})
     ```
 
 一般大型网页的页面都非常复杂，仅仅依靠分析HTML源码，可能毫无头绪。但是，使用浏览器的开发人员工具就非常方便啦，不仅可以直接快速定位页面元素，还可以直接给出Selector表达式。
-
-![](crawler-cheerio-ts/开发人员工具.jpg)
+<!-- ![](crawler-cheerio-ts/开发人员工具.jpg) -->
 {% asset_img 开发人员工具.jpg 开发人员工具中的Selector指示器 %}
 
 爬虫软件“八爪鱼”使用的是XPath表达式来定位页面元素（至少他的软件UI是这样做的）。我也尝试使用XPath，但是，由于HTML一些随意性，往往导致解析出错。而且，既然是网页，使用jQuery Selector表达式更简洁，更合适。
@@ -78,13 +77,14 @@ var coord_string = /114.[0-9]*,30.[0-9]*/g.exec(body)[0];
 
 不过这种方式有点问题。如果页面上的某些标签是使用脚本添加的，可能开发人员工具给出的Selector路径，不一定能在HTML源代码里找到。但是如果很重要的数据是通过前端脚本渲染上去的，那肯定会在一个变量里面保存这些数据。这个时候直接揪出这个变量就可以了，万事大吉，还不用自己去提取HTML元素。
 
-# TypeScript类型化爬虫
+# TypeScript编写爬虫
+既然使用TypeScript便写爬虫，那么就使用一些TypeScript的特性吧。首先应该就是TypeScript的类型化特点。当然还少不了`await`关键字。
 
+## API参数的类型化
 一个请求的请求参数往往是确定的，在一个开放API中都会给出。你所想要的数据类型是固定的，这个要看你的需求。类型化编写爬虫的方式，就是保证这两个过程不出错。
 
 例如，在利用高德API获取POI的时候，参数在文档中明确指出了（[高德地图API文档](http://lbs.amap.com/api/webservice/guide/api/search)）。我们如果照着这样的文档，编写一个接口或者一个类，可以实现一些自动化功能。同样，返回结果也可以编写一个类型，直接在构造函数中实现一些对结果的处理。
 
-## API参数的类型化
 例如，对高德搜索的API进行类型化。首先创建一个接口，表示一些除了key之外的参数
 ``` ts
 /** 输出结果的格式 */
@@ -263,5 +263,77 @@ export class ErshoufangListItem {
 }
 ```
 对应了下面这个列表页面中所需要提取的数据
-![](crawler-cheerio-ts/链家列表页面.png)
+<!-- ![](crawler-cheerio-ts/链家列表页面.png) -->
 {% asset_img 链家列表页面.png 链家的列表页面 %}
+
+在爬取页面的时候，按照这个类型中声明的属性进行爬取即可。这一点可以用于多人协作中，一个人负责确定所要爬取的数据的原型（声明这个类），另一个人便写爬虫，其他人按照这个类型对数据进行分析。
+
+## 延时函数编写
+如果想让程序等待一定时间再继续爬取，`setInterval()`函数是可以使用的，但是又容易掉到回调坑里面。如果你再一个请求得到返回结果后又发起了一系列请求，这样两套`setInterval()`是统一不起来的，各计各的时间（因为request也用的是回调）。这个时候用TypeScript的`await`关键字调用一个延时函数（起名为`delay()`）是再好不过的。
+
+`delay()`函数如下：
+``` ts
+/**
+ * 延时函数
+ * @param times 延时时间
+ */
+function delay(times: number): Promise<void>{
+    return new Promise<void>((resolve, reject)=>{setTimeout(()=>resolve(), times)});
+}
+```
+使用时直接用await关键字“调用”即可
+``` ts
+await delay(10000);
+```
+
+# 其他的话
+## 抓包工具
+要爬虫一定无法避免抓包。一般浏览器的开发人员工具又抓包的功能，同样也可以使用一些抓包工具来抓包。我比较喜欢使用抓包工具Fiddler。
+
+使用浏览器自带的抓包工具，只能在当前页面抓包，而且如果新弹出了一个窗口，往往需要打开抓包工具后刷新一下页面才能抓到包。抓包的结果不能保存，不太方便。
+
+使用Fiddler抓包就比较有优势，可以克服上述问题。但是Fiddler抓包范围太广，有些其他程序的http/https请求也会被抓到，因此抓包的结果可能要多很多。这个时候就要仔细分析哪些包是需要的，哪些包是不需要的。分析起来难度增大俩。
+
+其他抓包工具我还没有试过，用过Fiddler之后感觉确实挺好用的，所以就没有试其他的了。
+
+Fiddler还可以抓手机上的包，只需要设置代理即可，我曾经用这种方法抓了参考消息App的包，分析出它的API。如果一个手机软件用的是HTTPS协议，装一下Fiddler的证书即可。当然这时最好还是在安卓模拟器里面安装，以防个人信息无意中泄露。
+
+## SourceMap选项
+如果使用VSCode编写的话，可以直接调试。直接调试JavaScript是可以的，但是如何调试TypeScript呢？毕竟tsc编译生成的JS脚本太复杂了。
+
+这需要在tsconfig.json文件和.vscode/launch.json中，分别开启sourceMap选项和sourceMaps选项。
+``` json
+// tsconfig.json
+{
+    "compilerOptions": {
+        "lib": [
+            "es2015"
+        ],
+        "sourceMap": true
+    }
+}
+```
+``` json
+// .vscode/launch.json
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${file}",
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        }
+    ]
+}
+```
+
+-----------------------------
+暂时先记录到这里了。如果日后发现有一些需要补充的还会再添加上。如有错误欢迎大家指正。
