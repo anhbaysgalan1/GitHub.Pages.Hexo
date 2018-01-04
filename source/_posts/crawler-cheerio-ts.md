@@ -233,6 +233,8 @@ export class GaodePoi {
 ```
 这里面在构造函数中，调用了坐标转换库，转换了获取到的坐标。这个过程在获取结果时，在构造的过程中自动调用。
 
+具体程序示例请参考：[download-gaode-poi](https://github.com/HPDell/download-gaode-poi)
+
 ### HTML页面的示例
 如果不是爬开放API，类型化也有一定的作用。例如爬取列表的时候，或者详细信息的时候，可以知道哪些属性时需要爬的，以及还有哪些属性没有爬下来。例如这段类型的声明
 ``` ts
@@ -284,6 +286,92 @@ function delay(times: number): Promise<void>{
 await delay(10000);
 ```
 
+## “前端爬虫”的后台搭建
+像百度地图API这种开放平台，有的时候JavaScript API提供的功能比Web服务API提供的功能多。例如，JavaScript API提供了“商圈”数据获取的功能。如果我们要爬取商圈数据，那就只在HTML页面中，调用这套API，将获取到的数据，通过Ajax发送到服务器上。此时要求服务器需要提供上传数据的接口，一旦这个接口被访问，服务器将前端上传的数据保存到文件中即可。
+> 之所以这样做，是因为浏览器一般没有直接操作本地文件的能力，不能再获取到数据之后直接保存成文件。如果真要直接保存，那可能只能保存成cookie或者“本地存储”之类的东西？这样又不是很好用。
+
+这样一个爬虫的分工就更明显了。前端工程师可以在前端设计页面如何自动调用API进行数据获取并提交，后端工程师设计服务器接口以进行数据的接收、处理和存储。
+
+例如在编写这个商圈数据爬虫的过程中，百度给的[示例页面](http://api.map.baidu.com/library/CityList/1.4/examples/CityList.html)是这样的：
+{% asset_img 百度商圈API示例页面.png %}
+
+使用的是百度提供的[CityList](http://api.map.baidu.com/library/CityList/1.4/docs/symbols/BMapLib.CityList.html)类，包含两个方法：
+- `getBussiness()`：获取商圈数据。
+- `getSubAreaList()`：获取下级的区域列表。
+
+通过前端不断调用`getBussiness()`方法，即可获取到不同商圈的参数。
+``` js
+for (let j = 0; j < all_business.length; j++) {
+    const element = all_business[j];
+    console.log(element, "商圈数据");
+    await new Promise(function (resolve, reject) {
+        cityList.getBusiness(element, async function (json) {
+            await new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: "/upload/businessCircle",
+                    type: "POST",
+                    data: {
+                        body: JSON.stringify({
+                            name: element,
+                            business: json,
+                            city: "武汉市"
+                        })
+                    },
+                    success: function (body) {
+                        resolve();
+                    },
+                    error: function () {
+                        reject();
+                    }
+                })
+            })
+            resolve();
+        })
+    })
+    await new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            resolve()
+        }, 1000)
+    })
+}
+```
+> 这段程序代码中：
+> - 由于ES6带来了`await`，前端现在也可以使用这种方式来使异步执行的程序同步化。但同样要求在`async`修饰的函数中才能使用`await`关键字。
+> - `all_business`是所有商圈的名字。不同城市可能有相同名字的商圈，比如“中山公园”，这时可以根据返回结果中商圈的“城市”字段在判断。
+> - `JSON.stringify()`POST参数是“Key-Value”模式的，因此一个键对应一个值，这个值用字符串形式。如果直接传入一个对象，会被转换成多个键值对的形式。所以遇到JS对象，就要用`JSON.stringify()`函数将其变成字符串，在后台再用`JSON.parse()`函数解析。
+> - POST参数可以使用TypeScript的interface进行建模，这就需要浏览器中的脚本也使用TypeScript编写，然后编译。对于前端来说使用TypeScript的意义可能不大，因为很多前端库没有TypeScript的声明文件。但是前端工程师可以将自己所采用的POST参数模型交给后端工程师，后端工程师按照这个模型进行处理。
+
+在后端，建立一个接受POST请求的服务，比如我用Express搭建的服务器，提供了这样一个POST接口：
+``` ts
+/**
+ * 浏览器提交商圈
+ * @param req 请求
+ * @param res 响应
+ * @param next 后处理函数
+ */
+function postBusinessCircle(req: express.Request, res: express.Response, next: express.NextFunction) {
+    var data: {name: string, city: string, business: BusinessCircle[]} = JSON.parse(req.body.body);
+    fs.writeFile(`data/BusinessCircle/${data.name}.json`, JSON.stringify({
+        name: data.name,
+        business: data.business.filter(x => x.city === data.city)
+    }), (err) => {
+        if (err) console.log(err);
+        else {
+            console.log(`${data.name}写文件完成`);
+            res.send("success")
+        }
+    })
+}
+
+var router = express.Router();
+router.post("/businessCircle", postBusinessCircle)
+
+module.exports = router;
+```
+即可接收前端通过POST参数上传的数据。
+
+具体程序示例请参考：[baidu-business-circle](https://github.com/HPDell/baidu-business-circle)。
+
 # 其他的话
 ## 抓包工具
 要爬虫一定无法避免抓包。一般浏览器的开发人员工具又抓包的功能，同样也可以使用一些抓包工具来抓包。我比较喜欢使用抓包工具Fiddler。
@@ -332,6 +420,11 @@ Fiddler还可以抓手机上的包，只需要设置代理即可，我曾经用�
     ]
 }
 ```
+
+## Visual Studio Code 的插件
+VSCode有一个“JSON to TS”的插件，在使用起来非常方便。这个插件可以根据剪贴板或JSON文件中的JSON字符串，按照其格式，生成对应的TypeScript Interface。这样，如果爬取一些给出了示例JSON数据的开放API，或者是前端工程师提供的示例数据，都可以直接使用这个插件生成Interface，非常方便开发。
+
+不过这样生成的Interface也不是万能的，需要手动修改一些地方。如一些Interface的名字等。
 
 -----------------------------
 暂时先记录到这里了。如果日后发现有一些需要补充的还会再添加上。如有错误欢迎大家指正。
