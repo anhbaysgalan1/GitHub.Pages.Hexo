@@ -1,5 +1,6 @@
 {
     "pasteImage.path": "${currentFileDir}/${currentFileNameWithoutExt}",
     "pasteImage.prefix": "{% asset_img ",
-    "pasteImage.suffix": " %}"
+    "pasteImage.suffix": " %}",
+    "git.autofetch": true
 }
