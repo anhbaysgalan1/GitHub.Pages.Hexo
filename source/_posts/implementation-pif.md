@@ -51,11 +51,11 @@ PIF 核心库提供了一些类供我们使用。比如：
 
 导入时数据的方法非常简单，使用 PostGIS Shapefiel Import/Export Manager(PostGIS 2.0 Shapefile and DBF Loader Exporter) 工具导入即可。
 
-{% asset_img implementation-pif/PostGIS-Shp-Tool.png %}
+{% asset_img PostGIS-Shp-Tool.png %}
 
 在这个工具上设置数据库的连接，选择要导入的 shp 文件。选定 shp 文件后，最好点击 Options 按钮打开选项，选中最后一个复选框。
 
-{% asset_img implementation-pif/shp-options.png %}
+{% asset_img shp-options.png %}
 
 确定后，点击 Improt 按钮开始导入。等待其完成即可。
 
