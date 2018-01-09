@@ -104,7 +104,7 @@ class WuhanRoadBuilder(PathBuilder):
 
 这些函数和 PIF 框架的调用过程可参考 PIF 库中的`example.py`文件。
 
-# 利用 PostGIS 和 pgRouting 实现调用 PIF 算法
+# 利用 pgRouting 实现调用 PIF 算法
 
 借助 PostGIS 和 pgRouting 可以实现路径搜索功能，而使用 PostGIS 提供的大量的关于几何和地理数据的函数，可以方便实现对 PIF 算法的调用。但是这里需要编写的数据库函数，需要一定的数据库编程的能力。为了能够和 Python 编写的 PIF 核心代码结合起来，需要使用 Python 调用 PostgreSQL 函数，并将结果转化为 Geometry 及其子类型的对象。
 
