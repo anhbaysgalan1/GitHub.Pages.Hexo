@@ -268,6 +268,8 @@ ALTER FUNCTION public.pif_GetStatesAtPosition(float, float, float)
     OWNER TO postgres;
 ```
 
+> 为了避免投影误差，可以将所有结果中的坐标直接以 EPSJ:3857 坐标返回，下次调用时直接用这个坐标系的坐标。这样做同时也可以减少计算量。
+
 ### Python 函数的编写
 
 使用 Python 调用这个函数时，直接使用 psycopg2 包查询该函数即可。对于返回结果进行处理，分别创建`State`对象，最后添加到`StateCollection`对象中，并返回。
@@ -464,22 +466,44 @@ def getPaths(self, s1: State, s2: State):
     return [(s1, [s1.link_id] + path + [s2.link_id], s2, cost)]
 ```
 
+## 路径结果后处理
+
+在 PIF 核心库中，对两个车辆状态 $ x_i^{t} \in \mathbf{x}^{t} ,x_j^{t+1} \in \mathbf{x}^{t+1} $ 中间的路径 $ p_i $ 有要求。即 $ x_i^{t} $ 所在的路段的 ID 和 $x_j^{t+1}$ 所在路段的 ID 分别和 $ p_i $ 第一个路段的 ID 和 最后一个路段的 ID 相同。在不直接使用路段的 ID 作为最短路径搜索的返回值时，我们需要做一些处理。
+
+> 产生这个问题原因，是 PIF 库的示例代码中，采用 $ ((x_S, y_S), (x_T, y_T)) $ 来表示 $ x_i^{t} $ 所在的路段 ID。若记获取某个状态值所在路段的 ID 的函数是 $ \mathbf{id}(x) $，则要求 $ \mathbf{id}(x_i^{t}) = \overrightarrow{ST} = (p_i)_1 $，$ S, T $ 是路段的起点和终点。同理，$ \mathbf{id}(x_i^{t}) = \overrightarrow{ST} = (p_i)_{-1} $（$(p_i)_{-1}$ 表示最后一个搜索到的路径的最后一个路段）。
+
+对于起始状态，理论上共有 6 种可能。如下图所示。记起始状态点为 $X$，其可能的 6 种情况分别为 $ \left\lbrace x_1, x_2, \cdots, x_6 \right\rbrace $，其所在路段 $ \mathbf{l} = \overrightarrow{ST}$ 起点为 $S$，终点为 $T$，匹配到的整个路径为 $ P $。记符号 $ \lnot \mathbf{L} = \overrightarrow{TS} $。
+
+{% asset_img start-state-process.png 起始状态的处理 %}
+
+对于每个 $ X \in \left\lbrace x_1, x_2, \cdots, x_6 \right\rbrace $
+1. $ X = x_1 \neq S \neq T \wedge T = P_2 $ ：这是最一般的情况。只需令 $ P = \left\lbrace S \right \rbrace \cup P $ 即可。
+2. $ X = S \wedge T = P_2 $ ：此种情况无需处理。
+3. $ X = T \wedge S \neq P_2 $ ：令 $ P = \left\lbrace S \right \rbrace \cup P $。
+4. $ X = x_1 \neq S \neq T \wedge S = P_2 $ ：令 $ \mathbf{id}(X) = \lnot \mathbf{l} $。
+5. $ X = S \wedge T \neq P_2 $ ：令 $ P = \left\lbrace T \right \rbrace \cup P $，且 $ \mathbf{id}(X) = \lnot \mathbf{l} $。
+6. $ X = T \wedge S = P_2 $ ：令 $ \mathbf{id}(X) = \lnot \mathbf{l} $。
+
+对于结束状态，可能的情况如下图。
+
+{% asset_img end-state-process.png %}
+
+处理方法可与上同理。
+
+> 由于 pgRouting 的问题，好像会给求得的路径按照坐标大小排个序？我目前遇到过一次，因此，在进行上述处理之前，判断一下，起始状态和结束状态的坐标值是不是分别和路径的第一个点和最后一个点相同，如果不是，把路径反过来。
+
+> 在理论上，上述 6 种情况是合理的。但是在实际运行过程中，竟然产生了 $$ X = x_1 \neq S \neq T \wedge T = P_2 \wedge S = P_2 $$ 的情况，因此还需要做一个处理。如果上述 6 种情况都不满足，视为没找到路径。
+
 # 利用 ArcPy 实现调用 PIF 算法
 
 
 
 [PostGIS-Geography]: http://postgis.net/docs/manual-2.4/using_postgis_dbmanagement.html#PostGIS_Geography
-
 [PIF-Paper]: http://bayen.eecs.berkeley.edu/sites/default/files/journals/The_Path_Inference_Filter.pdf
-
 [PIF-github]: https://github.com/tjhunter/Path-Inference-Filter
-
 [create-topology-ref]: http://docs.pgrouting.org/2.4/en/pgr_createTopology.html#pgr-createtopology
-
 [PostGIS-STFunctions]:http://postgis.net/docs/manual-2.4/PostGIS_Special_Functions_Index.html#PostGIS_TypeFunctionMatrix
-
 [psycopg2-doc]:http://initd.org/psycopg/docs/index.html
-
 [postgis-home]:https://github.com/yohanboniface/python-postgis
 [pgRouting-csdn]:http://blog.csdn.net/longshengguoji/article/details/46793111
 [postgis-distance]:http://postgis.net/docs/manual-2.4/ST_Distance.html
