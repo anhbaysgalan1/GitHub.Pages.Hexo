@@ -4,16 +4,17 @@ date: 2018-03-09 18:58:45
 tags:
 ---
 
-1. [依赖库下载与安装](#%E4%BE%9D%E8%B5%96%E5%BA%93%E4%B8%8B%E8%BD%BD%E4%B8%8E%E5%AE%89%E8%A3%85)
-    1. [下载依赖库](#%E4%B8%8B%E8%BD%BD%E4%BE%9D%E8%B5%96%E5%BA%93)
-    1. [安装依赖库](#%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96%E5%BA%93)
-        1. [GDAL 编译安装](#gdal-%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85)
-        1. [wxWidgets 编译](#wxwidgets-%E7%BC%96%E8%AF%91)
-        1. [Eigen](#eigen)
-        1. [Boost 编译](#boost-%E7%BC%96%E8%AF%91)
-        1. [BLAS 和 CLAPACK 库编译](#blas-%E5%92%8C-clapack-%E5%BA%93%E7%BC%96%E8%AF%91)
-        1. [SQLite 编译、cURL 编译、 json_spirit 编译](#sqlite-%E7%BC%96%E8%AF%91%E3%80%81curl-%E7%BC%96%E8%AF%91%E3%80%81-jsonspirit-%E7%BC%96%E8%AF%91)
-1. [GeoDa 的编译](#geoda-%E7%9A%84%E7%BC%96%E8%AF%91)
+目录：
+- [依赖库下载与安装](#%E4%BE%9D%E8%B5%96%E5%BA%93%E4%B8%8B%E8%BD%BD%E4%B8%8E%E5%AE%89%E8%A3%85)
+    - [下载依赖库](#%E4%B8%8B%E8%BD%BD%E4%BE%9D%E8%B5%96%E5%BA%93)
+    - [安装依赖库](#%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96%E5%BA%93)
+        - [GDAL 编译安装](#gdal-%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85)
+        - [wxWidgets 编译](#wxwidgets-%E7%BC%96%E8%AF%91)
+        - [Eigen](#eigen)
+        - [Boost 编译](#boost-%E7%BC%96%E8%AF%91)
+        - [BLAS 和 CLAPACK 库编译](#blas-%E5%92%8C-clapack-%E5%BA%93%E7%BC%96%E8%AF%91)
+        - [SQLite 编译、cURL 编译、 json_spirit 编译](#sqlite-%E7%BC%96%E8%AF%91%E3%80%81curl-%E7%BC%96%E8%AF%91%E3%80%81-jsonspirit-%E7%BC%96%E8%AF%91)
+- [GeoDa 的编译](#geoda-%E7%9A%84%E7%BC%96%E8%AF%91)
 
 最近帮师兄配置 GeoDa 的环境，顺便记录下。
 <!-- more -->
