@@ -3,6 +3,8 @@ title: VS 下 GeoDa 开发环境配置
 date: 2018-03-09 18:58:45
 tags:
 ---
+最近帮师兄配置 GeoDa 的环境，顺便记录下。
+<!-- more -->
 
 目录：
 
@@ -17,8 +19,6 @@ tags:
         - [SQLite 编译、cURL 编译、 json_spirit 编译](#sqlite-%E7%BC%96%E8%AF%91%E3%80%81curl-%E7%BC%96%E8%AF%91%E3%80%81-jsonspirit-%E7%BC%96%E8%AF%91)
 - [GeoDa 的编译](#geoda-%E7%9A%84%E7%BC%96%E8%AF%91)
 
-最近帮师兄配置 GeoDa 的环境，顺便记录下。
-<!-- more -->
 主要会用到一些工具：
 
 - Visual Studio 的命令提示符，主要用到 nmake 命令。
@@ -63,19 +63,7 @@ tags:
     nmake -f makefile.vc MSVC_VER=1910 DEBUG=1
     ```
 
-    需要注意的是，`MSVC_VER` 变量代表了编译器的版本，文档中的记录是：
-
-    | `MSVC_VER` 值 | 版本号                                                             |
-    | ------------- | ------------------------------------------------------------------ |
-    | 1910          | 15.0(2017)                                                         |
-    | 1900          | 14.0(2015)                                                         |
-    | 1800          | 12.0(2013)                                                         |
-    | 1700          | 11.0(2012)                                                         |
-    | 1600          | 10.0(2010)                                                         |
-    | 1500          | 9.0 (2008)                                                         |
-    | 1400          | 8.0 (2005) - specific compilation flags, different from older VC++ |
-    | 1310          | 7.1 (2003) # is it still supported ?                               |
-    | 1300          | 7.0 (2002) # is it still supported ?                               |
+    需要注意的是，`MSVC_VER` 变量代表了编译器的版本。
 
     使用对应的版本号替换即可。另外， `DEBUG` 参数为 1 表示以 DEBUG 方式编译，为 0 表示以 RELEASE 方式编译。
 
@@ -97,6 +85,18 @@ tags:
 
 1. 编译完成后，将 `%GDAL_HOME%\include` 路径添加到 GeoDa 工程的包含目录中；
    将 `%GDAL_HOME%\lib` 路径添加到 GeoDa 工程的库目录中。
+
+| `MSVC_VER` 值 | 版本号                                                             |
+| ------------- | ------------------------------------------------------------------ |
+| 1910          | 15.0(2017)                                                         |
+| 1900          | 14.0(2015)                                                         |
+| 1800          | 12.0(2013)                                                         |
+| 1700          | 11.0(2012)                                                         |
+| 1600          | 10.0(2010)                                                         |
+| 1500          | 9.0 (2008)                                                         |
+| 1400          | 8.0 (2005) - specific compilation flags, different from older VC++ |
+| 1310          | 7.1 (2003) # is it still supported ?                               |
+| 1300          | 7.0 (2002) # is it still supported ?                               |
 
 ### wxWidgets 编译
 

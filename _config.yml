@@ -105,7 +105,7 @@ jsonContent:
     tags: true
 
 marked:
-  gfm: false
+  gfm: true
   pedantic: false
   sanitize: false
   tables: true
