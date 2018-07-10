@@ -219,6 +219,75 @@ if __name__ == '__main__':
     POOL.join()
 ```
 
+# 多进程共享资源
+
+当我们把多个任务分解到 $n$ 个进程上执行时，这 $n$ 个进程往往会存在某种共享的资源，
+如共享一个控制台、文件系统、列表或字典。这里存在两个问题：
+
+- 当多个进程同时访问这些资源时，就会产生冲突。例如，两个进程同时对控制台输出文本，写入的结果可以错综复杂，并不是两段文本的顺序组合。
+- 各个进程有自己的内存空间，变量无法共享。例如，当想要利用多个进程操作主进程的一个列表时，各个进程操作结束后，主进程仍然是原来的状态。
+
+这两个问题的解决，前者靠“锁”机制，后者靠“共享变量”机制。
+
+## 锁
+
+对于冲突的情况，当使用 tqdm 显示多个进度条时比较明显。在 Windows 上，由于
+“tqdm 无法获取默认锁”，因此控制台输出会比较乱，下面是一段程序在 Windows 上运行的效果：
+
+```txt
+λ python3 find_errors.py
+Process 0: 0it [00:00, ?it/s]
+Process 1: 0it [00:00, ?it/s]
+Process 0: 273516it [00:00, 523719.79it/s]
+Process 0: 995883it [00:01, 510379.67it/s]
+Process 0: 1107387it [00:02, 510326.10it/s]
+Process 0: 1224813it [00:02, 512761.81it/s]
+Process 0: 3483799it [00:06, 539191.83it/s]
+Process 1: 3683852it [00:06, 571536.15it/s]
+Process 0: 3550015it [00:06, 540296.03it/s]
+Process 0: 3615558it [00:06, 540947.45it/s]
+Process 0: 3742521it [00:06, 542112.37it/s]
+```
+
+而在 Linux 系统中的运行结果是
+
+```txt
+Process 0: 2045720it [00:03, 647073.52it/s]
+Process 1: 2092184it [00:03, 661530.01it/s]
+Process 2: 2065411it [00:03, 652446.31it/s]
+Process 3: 2093610it [00:03, 661782.04it/s]
+```
+
+可见在访问共享资源的时候，加锁是非常有必要的。
+
+### Lock
+
+### RLock
+
+### Semaphore
+
+## 共享变量
+
+### multiprocess 包内置类型
+
+### 通过 Manager 创建共享变量
+
+### 通过 Manager 管理
+
+# 进程间通信
+
+## 通过事件（Event）通信
+
+## 通过队列（Queue）通信
+
+## 通过管道（Pipe）通信
+
+# 其他
+
+## tqdm 多进度条
+
+## Windows 上 Lock 对象的异常
+
 [multiprocess-efficiency]:https://segmentfault.com/a/1190000007495352
 [join-explain]:https://www.cnblogs.com/lipijin/p/3709903.html
 [python多进程-cnblogs]:http://www.cnblogs.com/kaituorensheng/p/4445418.html
