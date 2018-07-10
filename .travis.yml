@@ -1,0 +1,16 @@
+language: node_js
+node_js:
+  - 8.11.3
+branches:
+  only:
+    - master
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+  keep-history: true
+  on:
+    branch: master
+  repo: git@github.com:HPDell/HPDell.github.io.git
+  target-branch: master
+  project-name: HPDell.github.io
