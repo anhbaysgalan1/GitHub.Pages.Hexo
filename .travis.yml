@@ -11,4 +11,5 @@ deploy:
   keep-history: true
   on:
     branch: master
-    repo: HPDell/HPDell.github.io
+  local-dir: public
+  repo: HPDell/HPDell.github.io
