@@ -1,6 +1,3 @@
 [submodule "themes/yilia"]
 	path = themes/yilia
 	url = git@huyg.site:hpdell/hexo-theme-yilia.git
-[submodule "themes/skapp"]
-	path = themes/skapp
-	url = git@huyg.site:hpdell/hexo-theme-skapp.git
