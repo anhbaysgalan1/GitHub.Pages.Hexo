@@ -2,7 +2,13 @@
 title: Python 多进程编程
 date: 2018-07-09 18:53:07
 tags:
+    - Python
+categories: Python
 ---
+Python 在处理大数据的时候，启用多进程是有效提高计算效率的手段。
+Python 已经提供了非常好用的 multiprocess 包来支持多进程编程，
+但是在多进程编程时仍然会遇到一些难以处理的问题，需要一些技巧来解决。
+<!-- more -->
 目录：
 
 - [Python 多进程对效率的提升](#python-%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%AF%B9%E6%95%88%E7%8E%87%E7%9A%84%E6%8F%90%E5%8D%87)
