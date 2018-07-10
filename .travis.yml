@@ -7,7 +7,7 @@ branches:
 deploy:
   provider: pages
   skip-cleanup: true
-  github-token: 3c7ef7acd7cf8487184b1c9fe4511b740ca84cf3  # Set in the settings page of your repository, as a secure variable
+  github-token: $TravisCI  # Set in the settings page of your repository, as a secure variable
   keep-history: true
   on:
     branch: master
