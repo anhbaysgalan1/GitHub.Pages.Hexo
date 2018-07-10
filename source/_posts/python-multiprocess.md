@@ -3,6 +3,38 @@ title: Python 多进程编程
 date: 2018-07-09 18:53:07
 tags:
 ---
+目录：
+
+- [Python 多进程对效率的提升](#python-%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%AF%B9%E6%95%88%E7%8E%87%E7%9A%84%E6%8F%90%E5%8D%87)
+- [Python 开启多进程](#python-%E5%BC%80%E5%90%AF%E5%A4%9A%E8%BF%9B%E7%A8%8B)
+    - [创建 Process 对象](#%E5%88%9B%E5%BB%BA-process-%E5%AF%B9%E8%B1%A1)
+        - [构造参数](#%E6%9E%84%E9%80%A0%E5%8F%82%E6%95%B0)
+        - [属性](#%E5%B1%9E%E6%80%A7)
+        - [方法](#%E6%96%B9%E6%B3%95)
+        - [调用示例](#%E8%B0%83%E7%94%A8%E7%A4%BA%E4%BE%8B)
+    - [将进程定义为类](#%E5%B0%86%E8%BF%9B%E7%A8%8B%E5%AE%9A%E4%B9%89%E4%B8%BA%E7%B1%BB)
+    - [进程池（Pool）](#%E8%BF%9B%E7%A8%8B%E6%B1%A0%EF%BC%88pool%EF%BC%89)
+        - [进程池构造](#%E8%BF%9B%E7%A8%8B%E6%B1%A0%E6%9E%84%E9%80%A0)
+        - [进程池方法](#%E8%BF%9B%E7%A8%8B%E6%B1%A0%E6%96%B9%E6%B3%95)
+        - [进程池调用示例](#%E8%BF%9B%E7%A8%8B%E6%B1%A0%E8%B0%83%E7%94%A8%E7%A4%BA%E4%BE%8B)
+- [多进程共享资源](#%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%85%B1%E4%BA%AB%E8%B5%84%E6%BA%90)
+    - [锁](#%E9%94%81)
+        - [互斥锁（Lock）](#%E4%BA%92%E6%96%A5%E9%94%81%EF%BC%88lock%EF%BC%89)
+        - [可重入锁（RLock）](#%E5%8F%AF%E9%87%8D%E5%85%A5%E9%94%81%EF%BC%88rlock%EF%BC%89)
+        - [条件锁（Condition)](#%E6%9D%A1%E4%BB%B6%E9%94%81%EF%BC%88condition)
+        - [信号量（Semaphore）](#%E4%BF%A1%E5%8F%B7%E9%87%8F%EF%BC%88semaphore%EF%BC%89)
+    - [共享变量](#%E5%85%B1%E4%BA%AB%E5%8F%98%E9%87%8F)
+        - [multiprocess 包内置类型](#multiprocess-%E5%8C%85%E5%86%85%E7%BD%AE%E7%B1%BB%E5%9E%8B)
+        - [通过 Manager 创建共享变量](#%E9%80%9A%E8%BF%87-manager-%E5%88%9B%E5%BB%BA%E5%85%B1%E4%BA%AB%E5%8F%98%E9%87%8F)
+        - [通过 Manager 管理](#%E9%80%9A%E8%BF%87-manager-%E7%AE%A1%E7%90%86)
+- [进程间通信](#%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1)
+    - [通过事件（Event）通信](#%E9%80%9A%E8%BF%87%E4%BA%8B%E4%BB%B6%EF%BC%88event%EF%BC%89%E9%80%9A%E4%BF%A1)
+    - [通过队列（Queue）通信](#%E9%80%9A%E8%BF%87%E9%98%9F%E5%88%97%EF%BC%88queue%EF%BC%89%E9%80%9A%E4%BF%A1)
+    - [通过管道（Pipe）通信](#%E9%80%9A%E8%BF%87%E7%AE%A1%E9%81%93%EF%BC%88pipe%EF%BC%89%E9%80%9A%E4%BF%A1)
+- [其他](#%E5%85%B6%E4%BB%96)
+    - [tqdm 多进度条](#tqdm-%E5%A4%9A%E8%BF%9B%E5%BA%A6%E6%9D%A1)
+    - [Windows 上 Lock 对象的异常](#windows-%E4%B8%8A-lock-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%BC%82%E5%B8%B8)
+
 # Python 多进程对效率的提升
 
 一篇[《Python 中单线程、多线程和多进程的效率对比实验》][multiprocess-efficiency]的文章中提到：
@@ -147,9 +179,7 @@ class FindTargetTaxiProcess(multiprocessing.Process):
                 for row in tqdm(in_file, ncols=80, position=self.index):
                     cells = row.split(",")
                     if int(cells[0]) == 11865:
-                        with lock:
-                            with open(log_file, mode="a") as log:
-                                print(row, file=log)
+                        print(row)
 
 if __name__ == '__main__':
     LOG_FILE = r"E:\出租车点\上下车点\scripts\data\find_error.log"
@@ -234,7 +264,7 @@ if __name__ == '__main__':
 对于冲突的情况，当使用 tqdm 显示多个进度条时比较明显。在 Windows 上，由于
 “tqdm 无法获取默认锁”，因此控制台输出会比较乱，下面是一段程序在 Windows 上运行的效果：
 
-```txt
+```plain
 λ python3 find_errors.py
 Process 0: 0it [00:00, ?it/s]
 Process 1: 0it [00:00, ?it/s]
@@ -251,7 +281,7 @@ Process 0: 3742521it [00:06, 542112.37it/s]
 
 而在 Linux 系统中的运行结果是
 
-```txt
+```plain
 Process 0: 2045720it [00:03, 647073.52it/s]
 Process 1: 2092184it [00:03, 661530.01it/s]
 Process 2: 2065411it [00:03, 652446.31it/s]
@@ -260,11 +290,149 @@ Process 3: 2093610it [00:03, 661782.04it/s]
 
 可见在访问共享资源的时候，加锁是非常有必要的。
 
-### Lock
+### 互斥锁（Lock）
 
-### RLock
+`Lock` 属于“互斥锁”，即[保证在任一时刻，只能有一个线程访问该对象。][使用Lock互斥锁]
+通过 `Lock` 类型创建互斥锁后，将其传递到子进程内部，即可在子进程中使用。
 
-### Semaphore
+使用 `Lock` 时，可以使用 `with` 语句加锁， `with` 语句块执行完成后自动解锁；
+也可以通过其 `acquire()` 函数来加锁，使用 `release()` 函数解锁。
+
+使用 `with` 语句进行加锁的示例代码如下：
+
+```py
+def run(self):
+    for filename in self.input_files:
+        with open(filename, encoding="GB2312") as in_file:
+            for row in tqdm(in_file):
+                cells = row.split(",")
+                if int(cells[0]) == 11865:
+                    with self.lock:
+                        with open(TARGET_TAXI_FILE, mode="a") as log:
+                            print(row, file=log)
+```
+
+> 这段代码在 Windows 上运行时，子进程内部的 lock 和 主进程传递进去的 lock 的 id 值不相同。
+> 但是在 Linux 系统上时相同的。因此 Windows 上这段代码有可能会出错。
+> 不过当文件被一个进程打开时，是无法被另一个进程打开的，因此这段程序的结果倒没出什么错。
+
+### 可重入锁（RLock）
+
+互斥锁可以解决简单的避免资源冲突的问题，但当一个线程加锁后仍需要再次访问共享资源时，
+就形成了嵌套锁，而使用互斥锁时就形成了“死锁”问题。这时我们需要使用 `RLock` 类型，
+即“可重入锁”。
+
+> 死锁的含义是：是指两个或两个以上的进程在执行过程中，因争夺资源而造成的一种互相等待的现象，
+> 若无外力作用，它们都将无法推进下去。
+> 此时称系统处于死锁状态或系统产生了死锁，这些永远在互相等待的进程称为死锁进程。
+> 避免死锁主要方法是正确有序的分配资源。
+
+`multiprocess` 中的 `RLock` 类型与 `Lock` 类型的区别在于：
+[RLock允许在同一线程中被多次申请。而 Lock 却不允许这种情况。][Python中Lock与RLock]
+因此，[如果使用 `RLock` ，那么 acquire() 和 release() 必须成对出现][Python中Lock与RLock]，
+调用了几次 `acquire()`，就需要调用几次 `release()`。
+
+### 条件锁（Condition)
+
+条件同步机制是指：线程 $B$ 等待特定条件 $C$ ，而另一个线程 $A$ 发出特定条件满足的信号 $C$ 。
+$B$ 在收到信号 $C$ 时，继续执行。
+
+可以通过“生产者-消费者”模型来理解这一过程。
+生产者获取锁，生产一个随机整数，通知消费者并释放锁。
+消费者获取锁，如果有整数则消耗一个整数并释放锁，如果没有就等待生产者继续生产。
+
+示例代码如下（参考[《Python 线程同步机制》][Python线程同步机制]并进行修改）：
+
+```py
+import multiprocess
+
+
+class Producer(multiprocessing.Process):
+    def __init__(self, productList, condition):
+        multiprocessing.Process.__init__(self)
+        self.productList = productList  # type: List
+        self.condition = condition  # type: multiprocess.Condition
+
+    def run(self):
+        while True:
+            product = random.randint(0, 100)
+            with self.condition:
+                print("条件锁：被 生产者 获取")
+                self.productList.append(product)
+                print(f"生产者：产生了 {product}。")
+                print("生产者：唤醒消费者线程")
+                self.condition.notify()
+                print("条件锁：被 生产者 释放")
+            time.sleep(1)
+
+
+class Customer(multiprocessing.Process):
+
+    def __init__(self, productList, condition):
+        multiprocessing.Process.__init__(self)
+        self.productList = productList  # type: List
+        self.condition = condition  # type: multiprocess.Condition
+
+    def run(self):
+        while True:
+            with self.condition:
+                print("条件锁：被 消费者 获取")
+                while True:
+                    if self.productList:
+                        product = self.productList.pop()
+                        print(f"消费者：消费了 {product}")
+                        break
+                    print("消费者：等待生产者")
+                    self.condition.wait()
+                print("条件锁：被 消费者 释放")
+
+
+def main():
+    manager = multiprocessing.Manager()
+    productList = manager.list()
+    condition = multiprocessing.Condition()
+    process_producer = Producer(productList, condition)
+    process_customer = Customer(productList, condition)
+    process_producer.start()
+    process_customer.start()
+    process_producer.join()
+    process_customer.join()
+
+if __name__ == '__main__':
+    main()
+```
+
+运行的部分结果是：
+
+```plain
+条件锁：被 生产者 获取
+生产者：产生了 47。
+生产者：唤醒消费者线程
+条件锁：被 生产者 释放
+条件锁：被 消费者 获取
+消费者：消费了 47
+条件锁：被 消费者 释放
+条件锁：被 消费者 获取
+消费者：等待生产者
+条件锁：被 生产者 获取
+生产者：产生了 100。
+生产者：唤醒消费者线程
+条件锁：被 生产者 释放
+消费者：消费了 100
+条件锁：被 消费者 释放
+条件锁：被 消费者 获取
+消费者：等待生产者
+条件锁：被 生产者 获取
+生产者：产生了 95。
+生产者：唤醒消费者线程
+条件锁：被 生产者 释放
+消费者：消费了 95
+条件锁：被 消费者 释放
+条件锁：被 消费者 获取
+消费者：等待生产者
+```
+
+### 信号量（Semaphore）
 
 ## 共享变量
 
@@ -291,3 +459,6 @@ Process 3: 2093610it [00:03, 661782.04it/s]
 [multiprocess-efficiency]:https://segmentfault.com/a/1190000007495352
 [join-explain]:https://www.cnblogs.com/lipijin/p/3709903.html
 [python多进程-cnblogs]:http://www.cnblogs.com/kaituorensheng/p/4445418.html
+[Python中Lock与RLock]:https://blog.csdn.net/cnmilan/article/details/8849895
+[使用Lock互斥锁]:https://www.jb51.net/article/63508.htm
+[Python线程同步机制]:https://yoyzhou.github.io/blog/2013/02/28/python-threads-synchronization-locks/
