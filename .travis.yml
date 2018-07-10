@@ -5,5 +5,4 @@ deploy:
   keep-history: true
   on:
     branch: master
-  repo: HPDell/HPDell.github.io
-  target-branch: master
+    repo: HPDell/HPDell.github.io
