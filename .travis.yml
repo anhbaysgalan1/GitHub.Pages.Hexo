@@ -1,9 +1,3 @@
-language: node_js
-node_js:
-  - 8.11.3
-branches:
-  only:
-    - master
 deploy:
   provider: pages
   skip-cleanup: true
@@ -13,4 +7,3 @@ deploy:
     branch: master
   repo: HPDell/HPDell.github.io
   target-branch: master
-  project-name: HPDell.github.io
