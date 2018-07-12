@@ -6,7 +6,7 @@ branches:
     - master
 cache: yarn
 script:
-  - hexo g
+  - cd themes/yilia/ && yarn run dist && cd ../../ && hexo g
 deploy:
   provider: pages
   skip-cleanup: true
