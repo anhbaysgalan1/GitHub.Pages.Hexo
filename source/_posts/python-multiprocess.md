@@ -2,17 +2,14 @@
 title: Python 多进程编程
 date: 2018-07-09 18:53:07
 tags:
-<<<<<<< HEAD
     - Python
-categories: Python
+categories:
+    - Python
 ---
 Python 在处理大数据的时候，启用多进程是有效提高计算效率的手段。
 Python 已经提供了非常好用的 multiprocess 包来支持多进程编程，
 但是在多进程编程时仍然会遇到一些难以处理的问题，需要一些技巧来解决。
 <!-- more -->
-=======
----
->>>>>>> dfffe1e9f0238337aec71fdc37267c233b38c5bc
 目录：
 
 - [Python 多进程对效率的提升](#python-%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%AF%B9%E6%95%88%E7%8E%87%E7%9A%84%E6%8F%90%E5%8D%87)
@@ -36,21 +33,13 @@ Python 已经提供了非常好用的 multiprocess 包来支持多进程编程�
     - [共享变量](#%E5%85%B1%E4%BA%AB%E5%8F%98%E9%87%8F)
         - [multiprocess 包内置类型](#multiprocess-%E5%8C%85%E5%86%85%E7%BD%AE%E7%B1%BB%E5%9E%8B)
         - [通过 Manager 创建共享变量](#%E9%80%9A%E8%BF%87-manager-%E5%88%9B%E5%BB%BA%E5%85%B1%E4%BA%AB%E5%8F%98%E9%87%8F)
-<<<<<<< HEAD
-=======
-        - [通过 Manager 管理](#%E9%80%9A%E8%BF%87-manager-%E7%AE%A1%E7%90%86)
->>>>>>> dfffe1e9f0238337aec71fdc37267c233b38c5bc
 - [进程间通信](#%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1)
     - [通过事件（Event）通信](#%E9%80%9A%E8%BF%87%E4%BA%8B%E4%BB%B6%EF%BC%88event%EF%BC%89%E9%80%9A%E4%BF%A1)
     - [通过队列（Queue）通信](#%E9%80%9A%E8%BF%87%E9%98%9F%E5%88%97%EF%BC%88queue%EF%BC%89%E9%80%9A%E4%BF%A1)
     - [通过管道（Pipe）通信](#%E9%80%9A%E8%BF%87%E7%AE%A1%E9%81%93%EF%BC%88pipe%EF%BC%89%E9%80%9A%E4%BF%A1)
 - [其他](#%E5%85%B6%E4%BB%96)
     - [tqdm 多进度条](#tqdm-%E5%A4%9A%E8%BF%9B%E5%BA%A6%E6%9D%A1)
-<<<<<<< HEAD
     - [Windows 上 Lock 的问题](#windows-%E4%B8%8A-lock-%E7%9A%84%E9%97%AE%E9%A2%98)
-=======
-    - [Windows 上 Lock 对象的异常](#windows-%E4%B8%8A-lock-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%BC%82%E5%B8%B8)
->>>>>>> dfffe1e9f0238337aec71fdc37267c233b38c5bc
 
 # Python 多进程对效率的提升
 
@@ -95,11 +84,7 @@ process = Process()
 `Process` 对象在构造时主要接收三个参数：
 
 - `target`：进程调用的函数；
-<<<<<<< HEAD
 - `args`：进程调用函数时给函数传递的参数，为一个元组；
-=======
-- `args`：进程调用函数时给函数传递的参数，为一个元祖；
->>>>>>> dfffe1e9f0238337aec71fdc37267c233b38c5bc
 - `name`：别名。
 
 ### 属性
@@ -145,11 +130,7 @@ for p in process_list:
     p.daemon = True
     p.start()
 for p in process_list:
-<<<<<<< HEAD
     p.join()
-=======
-    p.joi()
->>>>>>> dfffe1e9f0238337aec71fdc37267c233b38c5bc
 ```
 
 ## 将进程定义为类
@@ -459,7 +440,6 @@ if __name__ == '__main__':
 
 ### 信号量（Semaphore）
 
-<<<<<<< HEAD
 信号量是一个非负整数，所有通过它的进程都会将该整数减一，
 当该整数值为零时，所有试图通过它的进程都将处于等待状态。
 
@@ -727,29 +707,10 @@ if __name__ == '__main__':
         p.join()
 ```
 
-=======
-## 共享变量
-
-### multiprocess 包内置类型
-
-### 通过 Manager 创建共享变量
-
-### 通过 Manager 管理
-
-# 进程间通信
-
-## 通过事件（Event）通信
-
-## 通过队列（Queue）通信
-
-## 通过管道（Pipe）通信
-
->>>>>>> dfffe1e9f0238337aec71fdc37267c233b38c5bc
 # 其他
 
 ## tqdm 多进度条
 
-<<<<<<< HEAD
 是一个快速，可扩展的 Python 进度条，可以在 Python 长循环中添加一个进度提示信息，
 用户只需要封装任意的迭代器 `tqdm(iterator)` 。
 
@@ -766,18 +727,11 @@ if __name__ == '__main__':
 其实每次传入子进程函数内部的 `Lock`，在各个进程中的 `id` 都不一样。在 Linux 下没有这个问题。
 这往往会导致一些程序在 Windows 上不正确。
 因此，在 Windows 上最好少用 `Lock`，多采用消息传递或共享变量的方式设计程序。
-=======
-## Windows 上 Lock 对象的异常
->>>>>>> dfffe1e9f0238337aec71fdc37267c233b38c5bc
 
 [multiprocess-efficiency]:https://segmentfault.com/a/1190000007495352
 [join-explain]:https://www.cnblogs.com/lipijin/p/3709903.html
 [python多进程-cnblogs]:http://www.cnblogs.com/kaituorensheng/p/4445418.html
 [Python中Lock与RLock]:https://blog.csdn.net/cnmilan/article/details/8849895
 [使用Lock互斥锁]:https://www.jb51.net/article/63508.htm
-<<<<<<< HEAD
 [Python线程同步机制]:https://yoyzhou.github.io/blog/2013/02/28/python-threads-synchronization-locks/
 [liujiang]:http://www.liujiangblog.com/course/python/82
-=======
-[Python线程同步机制]:https://yoyzhou.github.io/blog/2013/02/28/python-threads-synchronization-locks/
->>>>>>> dfffe1e9f0238337aec71fdc37267c233b38c5bc
