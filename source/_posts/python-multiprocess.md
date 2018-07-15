@@ -32,14 +32,13 @@ Python 已经提供了非常好用的 multiprocess 包来支持多进程编程�
     - [共享变量](#%E5%85%B1%E4%BA%AB%E5%8F%98%E9%87%8F)
         - [multiprocess 包内置类型](#multiprocess-%E5%8C%85%E5%86%85%E7%BD%AE%E7%B1%BB%E5%9E%8B)
         - [通过 Manager 创建共享变量](#%E9%80%9A%E8%BF%87-manager-%E5%88%9B%E5%BB%BA%E5%85%B1%E4%BA%AB%E5%8F%98%E9%87%8F)
-        - [通过 Manager 管理](#%E9%80%9A%E8%BF%87-manager-%E7%AE%A1%E7%90%86)
 - [进程间通信](#%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1)
     - [通过事件（Event）通信](#%E9%80%9A%E8%BF%87%E4%BA%8B%E4%BB%B6%EF%BC%88event%EF%BC%89%E9%80%9A%E4%BF%A1)
     - [通过队列（Queue）通信](#%E9%80%9A%E8%BF%87%E9%98%9F%E5%88%97%EF%BC%88queue%EF%BC%89%E9%80%9A%E4%BF%A1)
     - [通过管道（Pipe）通信](#%E9%80%9A%E8%BF%87%E7%AE%A1%E9%81%93%EF%BC%88pipe%EF%BC%89%E9%80%9A%E4%BF%A1)
 - [其他](#%E5%85%B6%E4%BB%96)
     - [tqdm 多进度条](#tqdm-%E5%A4%9A%E8%BF%9B%E5%BA%A6%E6%9D%A1)
-    - [Windows 上 Lock 对象的异常](#windows-%E4%B8%8A-lock-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%BC%82%E5%B8%B8)
+    - [Windows 上 Lock 的问题](#windows-%E4%B8%8A-lock-%E7%9A%84%E9%97%AE%E9%A2%98)
 
 # Python 多进程对效率的提升
 
@@ -84,7 +83,7 @@ process = Process()
 `Process` 对象在构造时主要接收三个参数：
 
 - `target`：进程调用的函数；
-- `args`：进程调用函数时给函数传递的参数，为一个元祖；
+- `args`：进程调用函数时给函数传递的参数，为一个元组；
 - `name`：别名。
 
 ### 属性
@@ -130,7 +129,7 @@ for p in process_list:
     p.daemon = True
     p.start()
 for p in process_list:
-    p.joi()
+    p.join()
 ```
 
 ## 将进程定义为类
@@ -440,27 +439,293 @@ if __name__ == '__main__':
 
 ### 信号量（Semaphore）
 
+信号量是一个非负整数，所有通过它的进程都会将该整数减一，
+当该整数值为零时，所有试图通过它的进程都将处于等待状态。
+
+```python
+from multiprocessing import Process, current_process, Semaphore
+import time
+
+def worker(s, i):
+    s.acquire()
+    print(current_process().name + "acquire");
+    time.sleep(i)
+    print(current_process().name + "release\n");
+    s.release()
+
+if __name__ == "__main__":
+    s = Semaphore(2)
+    for i in range(5):
+        p = Process(target = worker, args=(s, i*2))
+        p.start()
+```
+
 ## 共享变量
+
+在多进程中，是无法直接使用全局变量作为共享变量的，因为不同进程具有不同的内存空间。
+但是，共享变量也是不能避免的。Python 中也提供了一些创建共享变量的方法。
+
+- Multiprocess 包内置类型
+- 通过 Manager 创建共享变量
 
 ### multiprocess 包内置类型
 
+multiprocess 包提供了两种类型的共享变量：
+
+- `Value(typecode_or_type, *args, lock=True)`：表示一个值类型变量。
+- `Array(typecode_or_type, size_or_initializer, *, lock=True)`：表示一个数组。这种创建数组的方式能力比较有限，它不支持除了 C 数据类型以外的类型。
+
+`typecode_or_type` 描述了元素的类型，可取值是：
+
+| typecode | type            |
+| -------- | --------------- |
+| 'c'      | ctypes.c_char   |
+| 'u'      | ctypes.c_wchar  |
+| 'b'      | ctypes.c_byte   |
+| 'B'      | ctypes.c_ubyte  |
+| 'h'      | ctypes.c_short  |
+| 'H'      | ctypes.c_ushort |
+| 'i'      | ctypes.c_int    |
+| 'I'      | ctypes.c_uint   |
+| 'l'      | ctypes.c_long   |
+| 'L'      | ctypes.c_ulong  |
+| 'f'      | ctypes.c_float  |
+| 'd'      | ctypes.c_doubl  |
+
+创建后，只要将这些变量传递给子进程即可。
+
 ### 通过 Manager 创建共享变量
 
-### 通过 Manager 管理
+Manager() 返回的 manager 对象提供一个服务进程，使得其他进程可以通过代理的方式操作 Python 对象。
+Manager 支持 list、dict 等多种数据类型。
+（[多进程multiprocess][liujiang]）
+
+把之前的共享变量的代码中，共享的变量由 list 改为 Manager 对象创建的 list，可以得到正确结果。
+
+```python
+from multiprocessing import Process, Lock, Manager
+import time
+
+def work(lock, var, index):
+    with lock:
+        var.append(index)
+        print(f"Process {index} apped {index}")
+
+if __name__ == '__main__':
+    var = Manager().list()
+    lock = Lock()
+    process_list = [Process(target=work, args=(lock, var, i)) for i in range(8)]
+    for p in process_list:
+        p.start()
+    for p in process_list:
+        p.join()
+    print(var)
+```
 
 # 进程间通信
 
+进程间通信，可以起到共享变量的效果，也可以起到锁的效果。
+
+进程间通信的方式有三种：
+
+- 事件（Event）
+- 队列（Queue）
+- 管道（Pipe）
+
 ## 通过事件（Event）通信
+
+Event 是同步通信的方式，有些类似于条件锁。由于是它是同步的，而且不能传递数据。
+因此这里就不仔细研究 Event 的作用。
+
+这个例子示例了主进程与子进程之间通过 Event 进行通信的方法。
+
+```python
+import multiprocessing
+import time
+def wait_for_event(e):
+    print("wait_for_event: starting")
+    e.wait()
+    print("wairt_for_event: e.is_set()->" + str(e.is_set()))
+
+def wait_for_event_timeout(e, t):
+    print("wait_for_event_timeout:starting")
+    e.wait(t)
+    print("wait_for_event_timeout:e.is_set->" + str(e.is_set()))
+
+if __name__ == "__main__":
+    e = multiprocessing.Event()
+    w1 = multiprocessing.Process(target=wait_for_event, args=(e,))
+    w2 = multiprocessing.Process(target=wait_for_event_timeout, args=(e, 6))
+    w1.start()
+    w2.start()
+    time.sleep(10)
+    print("main: event setting")
+    e.set()
+    print("main: event is set")
+```
 
 ## 通过队列（Queue）通信
 
+Queue 是多进程安全的队列，可以使用 Queue 实现多进程之间的数据传递。
+Queue 有两个方法：
+
+- `put()`：将数据插入队列中。
+- `get()`：从队列读取并且删除一个元素。
+
+这两个方法都有两个参数：`blocked`, `timeout`，
+控制队满和队空两种情况：
+
+- `put`：当队满时，如果 `blocked=True` ，那么会阻塞 `timeout` 指定的时间，直到队列有空间。如果超时，或 `blocked=False` ，则抛出 `Queue.Full` 异常。
+- `get`：当队满时，如果 `blocked=True` ，那么会阻塞 `timeout` 指定的时间，直到队列有元素。如果超时，或 `blocked=False` ，则抛出 `Queue.Empty` 异常。
+
+调用实例：
+
+```python
+class FineTargetTaxiProcess(mp.Process):
+    '''
+    处理进程：多进程方式处理文件，结果全部传递给打印进程。
+    '''
+    def __init__(self, input_files, index, queue):
+        mp.Process.__init__(self, target=self.pick, args=(queue,))
+        self.input_files = input_files
+        self.index = index
+        self.lock = lock
+
+    def pick(self, queue):
+        for filename in tqdm(self.input_files, ncols=80, position=self.index, desc=f"Process {self.index}"):
+            with open(filename, encoding="GB2312") as in_file:
+                for row in in_file:
+                    cells = row.split(",")
+                    if int(cells[0]) == 11865:
+                        try:
+                            queue.put(",".join(cells), block=False)
+                        except:
+                            print("Queue full")
+
+class PrinterProcess(mp.Process):
+    '''
+    打印进程：维持对输出文件的打开状态，打印数据。
+    可避免频繁打开、关闭结果文件造成的系统开销，
+    但是引入了消息传递的开销。
+    '''
+    def __init__(self, output_file, log, queue):
+        mp.Process.__init__(self, target=self.write, args=(queue,))
+        self.output_file = output_file
+        self.log_file = log
+
+    def write(self, queue):
+        with open(self.output_file, mode="w", newline="\n") as printer, open(self.log_file, mode="w") as log:
+            while True:
+                try:
+                    row = queue.get(block=True, timeout=1)
+                    print(row, file=printer)
+                except:
+                    print("Queue empty", file=log)
+
+if __name__ == '__main__':
+    lock = mp.Lock()
+    ROOT_DIR = r"/mnt/e/出租车点/201502/RawCSV"
+    INPUT_FILES = [os.path.join(ROOT_DIR, f) for f in os.listdir(ROOT_DIR)]
+    GROUP_LIST = distrib_works(INPUT_FILES, 6)
+    QUEUE = mp.Queue()
+    PROCESS_LIST = [FineTargetTaxiProcess(element, i, QUEUE) for i, element in enumerate(GROUP_LIST)]
+    PRINTER_PROCESS = PrinterProcess("./data/usequeue.txt", "./data/usequeue.log", QUEUE)
+    for process in PROCESS_LIST:
+        process.daemon = True
+        process.start()
+    PRINTER_PROCESS.daemon = True
+    PRINTER_PROCESS.start()
+    for p in PROCESS_LIST:
+        p.join()
+```
+
 ## 通过管道（Pipe）通信
+
+Pipe 是一个可以双向通信的对象，返回 `(conn1, conn2)`，
+代表一个管道的两个端， `conn1` 只负责接受消息， `conn2` 只负责发送消息。
+如果设置了 `duplex=True` ，那么这个管道是全双工模式，
+`conn1` 和 `conn2` 均可收发。
+
+```python
+class FineTargetTaxiProcess(mp.Process):
+    '''
+    处理进程：多进程方式处理文件，结果全部传递给打印进程。
+    '''
+    def __init__(self, input_files, index, pipe):
+        mp.Process.__init__(self, target=self.pick, args=(pipe,))
+        self.input_files = input_files
+        self.index = index
+        self.lock = lock
+
+    def pick(self, pipe):
+        for filename in tqdm(self.input_files, ncols=80, position=self.index, desc=f"Process {self.index}"):
+            with open(filename, encoding="GB2312") as in_file:
+                for row in in_file:
+                    cells = row.split(",")
+                    if int(cells[0]) == 11865:
+                        try:
+                            pipe.send(",".join(cells))
+                        except e as Exception:
+                            print("Pipe send error")
+
+class PrinterProcess(mp.Process):
+    '''
+    打印进程：维持对输出文件的打开状态，打印数据。
+    可避免频繁打开、关闭结果文件造成的系统开销，
+    但是引入了消息传递的开销。
+    '''
+    def __init__(self, output_file, log, pipe):
+        mp.Process.__init__(self, target=self.write, args=(pipe,))
+        self.output_file = output_file
+        self.log_file = log
+
+    def write(self, pipe):
+        with open(self.output_file, mode="w", newline="\n") as printer, open(self.log_file, mode="w") as log:
+            while True:
+                try:
+                    row = pipe.recv()
+                    print(row, file=printer)
+                except e as Exception:
+                    print("Pipe read error", file=log)
+
+if __name__ == '__main__':
+    lock = mp.Lock()
+    # ROOT_DIR = "../data/201502/temp"
+    ROOT_DIR = r"/mnt/e/出租车点/201502/RawCSV"
+    INPUT_FILES = [os.path.join(ROOT_DIR, f) for f in os.listdir(ROOT_DIR)]
+    GROUP_LIST = distrib_works(INPUT_FILES, 6)
+    (RECEIVER, SENDER) = mp.Pipe()
+    PROCESS_LIST = [FineTargetTaxiProcess(element, i, SENDER) for i, element in enumerate(GROUP_LIST)]
+    PRINTER_PROCESS = PrinterProcess("./data/usepipe.txt", "./data/usepipe.log", RECEIVER)
+    for process in PROCESS_LIST:
+        process.daemon = True
+        process.start()
+    PRINTER_PROCESS.daemon = True
+    PRINTER_PROCESS.start()
+    for p in PROCESS_LIST:
+        p.join()
+```
 
 # 其他
 
 ## tqdm 多进度条
 
-## Windows 上 Lock 对象的异常
+是一个快速，可扩展的 Python 进度条，可以在 Python 长循环中添加一个进度提示信息，
+用户只需要封装任意的迭代器 `tqdm(iterator)` 。
+
+这里有一些参数：
+
+- `ncols`：整个进度条（包括条以及其他文字）的宽度。最好设置一个小于控制台总宽的值。
+- `mininterval`：进度条更新的最小间隔。默认为 0.1。
+- `position`：进度条的位置，从0开始。对不同的 tqdm 对象设置不同的 position，可以在控制台的不同位置显示出来，适用于多进程与多线程。
+
+> 由于 Windows 上多进程时 tqdm 无法获取默认的锁，所以会出现进度条错乱。在 Linux 上是没有问题的。
+
+## Windows 上 Lock 的问题
+
+其实每次传入子进程函数内部的 `Lock`，在各个进程中的 `id` 都不一样。在 Linux 下没有这个问题。
+这往往会导致一些程序在 Windows 上不正确。
+因此，在 Windows 上最好少用 `Lock`，多采用消息传递或共享变量的方式设计程序。
 
 [multiprocess-efficiency]:https://segmentfault.com/a/1190000007495352
 [join-explain]:https://www.cnblogs.com/lipijin/p/3709903.html
@@ -468,3 +733,4 @@ if __name__ == '__main__':
 [Python中Lock与RLock]:https://blog.csdn.net/cnmilan/article/details/8849895
 [使用Lock互斥锁]:https://www.jb51.net/article/63508.htm
 [Python线程同步机制]:https://yoyzhou.github.io/blog/2013/02/28/python-threads-synchronization-locks/
+[liujiang]:http://www.liujiangblog.com/course/python/82
